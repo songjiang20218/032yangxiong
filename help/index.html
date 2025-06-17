@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <!-- <script src="./axios.js"></script> -->
+  <title>Help</title>
+  <script src="./vue.min.js"></script>
+  <script src="./locale.js"></script>
+</head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: #F8F8F8;
+  }
+
+  /* 定义从左侧滑入的关键帧动画 */
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+    }
+
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInFromLeft {
+    from {
+      transform: translateX(-100%);
+    }
+
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  /* 应用滑入动画 */
+  .slide-in {
+    animation: slideInFromRight 0.2s ease-out forwards;
+    overflow-x: hidden;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .slide-out {
+    animation: slideInFromLeft 0.2s ease-out forwards;
+    overflow-x: hidden;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  #app {
+    box-sizing: border-box;
+    padding-bottom: calc(36px + constant(safe-area-inset-bottom));
+    padding-bottom: calc(36px + env(safe-area-inset-bottom));
+  }
+
+  .header {
+    padding: 16px;
+    background: #FFFFFF;
+    text-align: center;
+    position: fixed;
+    font-size: 17px;
+    font-family: SFPro, SFPro;
+    font-weight: 600;
+    color: #000000;
+    line-height: 22px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-sizing: border-box;
+
+    z-index: 10;
+  }
+
+  .back {
+    position: absolute;
+    left: 8px;
+    bottom: 16px;
+    width: 24px;
+  }
+
+
+  .list {
+    background-color: #FFFFFF;
+  }
+
+  .list>div {
+    padding-left: 16px;
+  }
+
+  .list>div:active {
+    background-color: rgba(0, 0, 0, 0.07);
+  }
+
+  .list-item {
+    padding: 10px 12px 10px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .list-item>img {
+    width: 24px;
+  }
+
+  .cameras {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #FFFFFF;
+    margin-bottom: 16px;
+  }
+
+  .cameras>.item {
+    padding: 16px;
+    width: 50%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  /* 选择偶数行 */
+  .cameras>.item:nth-child(even) {
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* 选择奇数列 */
+  .cameras>.item:nth-child(odd) {
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .cameras>.item>img {
+    width: 64px;
+  }
+
+  .cameras>.item>div {
+    font-size: 17px;
+    font-family: PingFangSC, PingFang SC;
+    font-weight: 400;
+    color: #000000;
+    line-height: 24px;
+    margin-top: 10px;
+  }
+
+  /* 选择某个元素的倒数第二个子元素 */
+  .cameras>:nth-last-child(2),
+  .cameras>:nth-last-child(1) {
+    /* 添加样式 */
+    border-bottom: 0;
+  }
+
+  .desc {
+    padding: 0 16px;
+    margin-bottom: 16px;
+  }
+
+  .desc>.title {
+    font-size: 16px;
+    font-family: PingFangSC, PingFang SC;
+    font-weight: 600;
+    color: #000000;
+    line-height: 22px;
+    margin-bottom: 8px;
+  }
+
+  .desc>.detail {
+    font-size: 12px;
+    font-family: PingFangSC, PingFang SC;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.7);
+    line-height: 17px;
+  }
+</style>
+
+<body>
+  <!-- -->
+  <div id="app" :style="`padding-top:${70+navHeight}px`" :class="slideType=='out'?'slide-out':''">
+    <div class="header" :style="`padding-top:${16+navHeight}px`">
+      <img @click="back" class="back" src="./img/back.png" alt="">
+      {{page_data.help}}
+    </div>
+    <div class="desc">
+      <div class="title">
+        {{page_data.unableToConnect}}
+      </div>
+      <div class="detail">
+        {{page_data.topDetail}}
+      </div>
+    </div>
+    <div class="cameras">
+      <div @click="toGuide(item.src)" v-for="(item,index) of cameras" class="item">
+        <img style="border-radius: 12px;" :src="`./img/${item.src}.png`" alt="">
+        <div>{{item.title}}</div>
+      </div>
+    </div>
+    <div class="list">
+      <div @click="toDetail(item.key)" :style="index==list.length-1?'border:0':''"
+        v-for="(item,index) of list.filter((item,index)=>showRefundSwitch?index<list.length:index<list.length-1)"
+        :key="index">
+        <div class="list-item">
+          {{item.name}}
+          <img src="./img/enter.png" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    new Vue({
+      el: '#app',
+      data: {
+        uuid: "",
+        appId: "",
+        showRefundSwitch: true,
+        slideType: "",
+        navHeight: 0,
+        language: "en",
+        page_data: {},
+        list: [
+          {
+            name: "",
+            key: "question1"
+          },
+          {
+            name: "",
+            key: "question2"
+          },
+          {
+            name: "",
+            key: "question3"
+          },
+          {
+            name: "",
+            key: "question4"
+          },
+          {
+            name: "",
+            key: "question5"
+          },
+          {
+            name: "",
+            key: "question6"
+          },
+          {
+            name: "",
+            key: "question7"
+          },
+          {
+            name: "",
+            key: "question8"
+          },
+          {
+            name: "",
+            key: "question9"
+          },
+          {
+            name: "",
+            key: "question10"
+          },
+          {
+            name: "",
+            key: "question11"
+          },
+          {
+            name: "",
+            key: "question12"
+          },
+          {
+            name: "",
+            key: "question13"
+          },
+          {
+            name: "",
+            key: "question14"
+          },
+          {
+            name: "",
+            key: "unsolved"
+          }
+        ],
+        repeatTime: 0,
+        cameras: [
+          {
+            title: "",
+            src: "normal"
+          },
+          {
+            title: "",
+            src: "tapo"
+          },
+          {
+            title: "",
+            src: "blink"
+          },
+          {
+            title: "",
+            src: "wyze"
+          },
+          {
+            title: "",
+            src: "yiiot"
+          },
+          {
+            title: "",
+            src: "arlo"
+          },
+        ],
+      },
+      mounted() {
+        window.iostojs = this.iostojs;
+        this.setAnimation()
+        this.setPageData()
+        let id = this.getQuery("id") || 'default';
+      },
+      methods: {
+        iostojs(action) {
+          let json = JSON.parse(this.decode(action));
+          this.showRefundSwitch = json.show_problem_not_solved
+          window.navHeight = json.nav_height
+          let pageInfo = {
+            appId: json.app_id,
+            language: this.getLanguage(json.system_language),
+            navHeight:json.nav_height,
+            uuid:  json.device_uuid
+          }
+          sessionStorage.setItem("pageInfo", JSON.stringify(pageInfo))
+          this.setPageData()
+          return (
+            'ok'
+          )
+        },
+        setPageData() {
+          let pageInfo = sessionStorage.getItem("pageInfo") && JSON.parse(sessionStorage.getItem("pageInfo")) || {}
+          this.language =pageInfo.language ;
+          this.uuid = pageInfo.uuid;
+          this.appId = pageInfo.appId;
+          this.navHeight = pageInfo.navHeight; 
+          this.page_data = locales[this.language] || locales['en']
+          document.title = this.page_data.help;
+          this.list = this.list.map((item, index) => {
+            if (item.key == 'unsolved') {
+              item.name = this.page_data.unsolvedTitle
+            } else {
+              item.name = this.page_data.answers[item.key].title
+            }
+            return item
+          })
+          this.cameras = this.cameras.map((item, index) => {
+            item.title = this.page_data[item.src].title
+            return item
+          })
+        },
+        decode(str) {
+          return decodeURIComponent(atob(str).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+        },
+        setAnimation() {
+          var view = document.getElementById("app")
+          let type = this.getQuery('type')
+          if (type == 'out') {
+            view.className = "slide-out"
+          }
+          setTimeout(() => {
+            view.className = null
+          }, 200);
+        },
+        toDetail(key) {
+          if (key == "unsolved") {
+            window.location.href = "./detail.html?type=in"
+          } else {
+            window.location.href = "./answer.html?type=in&key=" + key
+          }
+        },
+        toGuide(src) {
+          window.location.href = "./guide.html?type=in&src=" + src
+        },
+        getLanguage(language) {
+          let targetLanguage = ''
+          languageCodes.forEach((item) => {
+            let language_index = language.indexOf(item)
+            if (language_index != '-1') {
+              targetLanguage = item
+            }
+          })
+          if (targetLanguage) {
+            return targetLanguage
+          } else {
+            return 'en'
+          }
+        },
+        back() {
+          // jstoios
+          window.webkit.messageHandlers.page_back.postMessage({
+            type: "page_back"
+          });
+        },
+        getQuery(name) {
+          let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+          let r = window.location.search.substr(1).match(reg);
+          if (r != null) {
+            // 对参数值进行解码
+            return decodeURIComponent(r[2]);
+          }
+          return null;
+        },
+      }
+    })
+  </script>
+  <script>
+
+  </script>
+</body>
+
+</html>
